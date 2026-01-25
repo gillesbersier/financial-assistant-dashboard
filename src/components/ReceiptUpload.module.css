@@ -1,0 +1,194 @@
+.panel {
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+}
+
+.title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.uploadArea {
+    border: 2px dashed var(--neutral-300);
+    border-radius: var(--radius-md);
+    padding: var(--space-xl) var(--space-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg-subtle);
+    gap: var(--space-sm);
+    flex: 1;
+    min-height: 200px;
+}
+
+.uploadArea:hover,
+.uploadArea.active {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+.uploadText {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.uploadSubtext {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+.icon {
+    color: var(--neutral-500);
+    margin-bottom: var(--space-xs);
+}
+
+.uploadArea:hover .icon {
+    color: var(--primary);
+}
+
+.filePreview {
+    background: var(--bg-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-lg);
+    border: 1px solid var(--neutral-200);
+}
+
+.fileInfo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    overflow: hidden;
+}
+
+.fileName {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.fileSize {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+.removeBtn {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    transition: all 0.2s;
+}
+
+.removeBtn:hover {
+    background: var(--error-bg);
+    color: var(--error);
+}
+
+.submitBtn {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: auto;
+}
+
+.submitBtn:hover {
+    background: var(--primary-hover);
+}
+
+.submitBtn:disabled {
+    background: var(--neutral-300);
+    cursor: not-allowed;
+}
+
+.status {
+    margin-top: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.statusSuccess {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.statusError {
+    background: var(--error-bg);
+    color: var(--error);
+}
+
+.textPrimary {
+    color: var(--primary);
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.typeSelector {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.checkboxLabel {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkboxInput {
+    accent-color: var(--primary);
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+}

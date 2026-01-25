@@ -1,0 +1,143 @@
+.panel {
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+}
+
+.title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.description {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-lg);
+    line-height: 1.4;
+}
+
+.steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    /* Vertical timeline */
+}
+
+.step {
+    display: flex;
+    gap: var(--space-md);
+    position: relative;
+    padding-bottom: var(--space-lg);
+    /* Space for line */
+}
+
+.step:last-child {
+    padding-bottom: 0;
+}
+
+.iconWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 20px;
+}
+
+.line {
+    flex: 1;
+    width: 2px;
+    background: var(--neutral-200);
+    margin-top: 4px;
+    min-height: 16px;
+}
+
+.lineActive {
+    background: var(--success);
+}
+
+.stepContent {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    padding-top: 2px;
+    /* align with icon */
+}
+
+.stepName {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.activeText {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.stepTime {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+.textSuccess {
+    color: var(--success);
+}
+
+.textPrimary {
+    color: var(--primary);
+}
+
+.textError {
+    color: var(--error);
+}
+
+.textNeutral {
+    color: var(--neutral-300);
+}
+
+.spin {
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.footer {
+    margin-top: auto;
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--neutral-100);
+}
+
+.viewLogsBtn {
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+}
+
+.viewLogsBtn:hover {
+    text-decoration: underline;
+}
+
+.badge {
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background: var(--success-bg);
+    color: var(--success);
+    font-size: 0.75rem;
+    font-weight: 600;
+}

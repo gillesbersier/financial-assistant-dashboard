@@ -1,0 +1,68 @@
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+}
+
+.cardContent {
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.valueRow {
+    display: flex;
+    align-items: baseline;
+}
+
+.value {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-main);
+    letter-spacing: -0.02em;
+}
+
+.metaRow {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: 4px;
+}
+
+.changeBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+}
+
+.positive {
+    color: var(--success);
+    background: var(--success-bg);
+}
+
+.negative {
+    color: var(--error);
+    background: var(--error-bg);
+}
+
+.neutral {
+    color: var(--text-secondary);
+    background: var(--neutral-100);
+}
+
+.subtext {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}

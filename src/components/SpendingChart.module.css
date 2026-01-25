@@ -1,0 +1,35 @@
+.chartContainer {
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-lg);
+}
+
+.title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.filter {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--neutral-300);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    outline: none;
+}
+
+.chartWrapper {
+    flex: 1;
+    width: 100%;
+    min-height: 0;
+}
