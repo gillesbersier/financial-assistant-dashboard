@@ -33,3 +33,15 @@
     width: 100%;
     min-height: 0;
 }
+
+/* Remove focus outline from chart elements */
+.chartWrapper :global(.recharts-surface),
+.chartWrapper :global(.recharts-layer),
+.chartWrapper :global(.recharts-bar-rectangle),
+.chartWrapper :global(.recharts-wrapper) {
+    outline: none !important;
+}
+
+.chartWrapper :global(.recharts-bar-rectangle:focus) {
+    outline: none !important;
+}

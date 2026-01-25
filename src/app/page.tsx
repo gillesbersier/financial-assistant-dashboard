@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import Image from "next/image";
 import Header from '@/components/Header';
 import StatsCards from '@/components/StatsCards';
@@ -7,6 +10,8 @@ import InvoicesTable from '@/components/InvoicesTable';
 import styles from './page.module.css';
 
 export default function Home() {
+  const [selectedMonth, setSelectedMonth] = useState<Date | null>(null);
+
   return (
     <main className="container">
       <div className={styles.dashboard}>
@@ -15,12 +20,14 @@ export default function Home() {
         <StatsCards />
 
         <div className={styles.mainGrid}>
-          <SpendingChart />
+          <SpendingChart
+            onMonthSelect={setSelectedMonth}
+            selectedMonth={selectedMonth}
+          />
           <ReceiptUpload />
-
         </div>
 
-        <InvoicesTable />
+        <InvoicesTable filterMonth={selectedMonth} />
       </div>
     </main>
   );

@@ -4,8 +4,9 @@ import { useState } from 'react';
 import styles from './InvoicesTable.module.css';
 import { ChevronRight, Search, Filter, Loader2, AlertCircle, RefreshCw, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
 import { useInvoices, Invoice } from '../hooks/useInvoices';
+import { format, parseISO, isSameMonth, isSameYear } from 'date-fns';
 
-export default function InvoicesTable() {
+export default function InvoicesTable({ filterMonth }: { filterMonth?: Date | null }) {
     const { invoices, loading, error, refresh } = useInvoices();
     const [activeTab, setActiveTab] = useState<'invoice' | 'receipt'>('invoice');
     const [selectedInvoice, setSelectedInvoice] = useState<typeof invoices[0] | null>(null);
@@ -14,6 +15,15 @@ export default function InvoicesTable() {
 
     const filteredInvoices = invoices.filter(inv => {
         if (inv.type !== activeTab) return false;
+
+        // Month Filter
+        if (filterMonth && inv.date && inv.date !== 'N/A') {
+            const invDate = parseISO(inv.date);
+            if (!isSameMonth(invDate, filterMonth) || !isSameYear(invDate, filterMonth)) {
+                return false;
+            }
+        }
+
         if (!searchQuery) return true;
         const query = searchQuery.toLowerCase();
         return (
