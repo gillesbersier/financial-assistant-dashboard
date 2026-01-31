@@ -50,12 +50,42 @@ export default function InvoicesTable({ filterMonth, dateRange, invoices, loadin
             }
         }
 
+
         if (!searchQuery) return true;
-        const query = searchQuery.toLowerCase();
-        return (
-            inv.provider.toLowerCase().includes(query) ||
-            String(inv.id).toLowerCase().includes(query)
-        );
+
+        // Split by any whitespace to handle multiple spaces/tabs safely
+        const terms = searchQuery.toLowerCase().split(/\s+/).filter(t => t.trim() !== '');
+
+        // ALL terms must match (AND logic)
+        return terms.every(term => {
+            // 1. Amount Filter with Operators (>100, <50, >=500, <=20)
+            const amountMatch = term.match(/^([<>]=?)(\d+(\.\d+)?)$/);
+            if (amountMatch) {
+                const operator = amountMatch[1];
+                const value = parseFloat(amountMatch[2]);
+                const amount = inv.rawAmount;
+
+                switch (operator) {
+                    case '>': return amount > value;
+                    case '<': return amount < value;
+                    case '>=': return amount >= value;
+                    case '<=': return amount <= value;
+                    default: return false;
+                }
+            }
+
+            // 2. Universal Text Filter (Matches Provider, Desc, ID, Category, Date, Year, Amount amount)
+            // This covers "2025" (Year) -> Matched in Date
+            // This covers "2" -> Matched in Date, Amount string, or Provider
+            return (
+                inv.provider.toLowerCase().includes(term) ||
+                String(inv.id).toLowerCase().includes(term) ||
+                (inv.description && inv.description.toLowerCase().includes(term)) ||
+                (inv.category && inv.category.toLowerCase().includes(term)) ||
+                (inv.date && inv.date.toLowerCase().includes(term)) ||
+                (inv.amount && inv.amount.toLowerCase().includes(term))
+            );
+        });
     });
 
     const sortedInvoices = [...filteredInvoices].sort((a, b) => {

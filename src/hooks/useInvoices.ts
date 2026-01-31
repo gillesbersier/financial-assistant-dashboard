@@ -116,7 +116,8 @@ export function useInvoices() {
                 return {
                     id: String(item.invoice_nr || `INV-UNK-${index}`),
                     provider: item.provider || 'Unknown Provider',
-                    date: item.date_invoice ? new Date(item.date_invoice).toISOString().split('T')[0] : 'N/A',
+                    // Avoid timezone shifts by using the raw string if it looks like a date
+                    date: item.date_invoice ? String(item.date_invoice).split('T')[0] : 'N/A',
                     amount: `${formatCurrency(item.gross_amount, item.currency)}`,
                     status: status,
                     link: link,
