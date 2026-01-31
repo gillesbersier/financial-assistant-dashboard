@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import styles from './InvoicesTable.module.css';
-import { ChevronRight, Search, Filter, Loader2, AlertCircle, RefreshCw, ArrowUp, ArrowDown, ArrowUpDown, Home, Monitor, Car, Utensils, GraduationCap, Palmtree, MoreHorizontal, HelpCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { ChevronRight, Search, Filter, Loader2, AlertCircle, RefreshCw, ArrowUp, ArrowDown, ArrowUpDown, Home, Monitor, Car, Utensils, GraduationCap, Palmtree, MoreHorizontal, HelpCircle, CheckCircle2, XCircle, Download, FileText, FileSpreadsheet, ChevronDown } from 'lucide-react';
 import { useInvoices, Invoice } from '../hooks/useInvoices';
 import { format, parseISO, isSameMonth, isSameYear } from 'date-fns';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface InvoicesTableProps {
     filterMonth?: Date | null;
@@ -21,8 +23,49 @@ export default function InvoicesTable({ filterMonth, dateRange, invoices, loadin
     // Removed internal hook call
     const [activeTab, setActiveTab] = useState<'invoice' | 'receipt'>('invoice');
     const [selectedInvoice, setSelectedInvoice] = useState<typeof invoices[0] | null>(null);
-    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'date', direction: 'desc' });
     const [searchQuery, setSearchQuery] = useState('');
+
+    const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+    const exportMenuRef = useRef<HTMLDivElement>(null);
+
+    // Export Modal State
+    const [showExportModal, setShowExportModal] = useState(false);
+    const [exportFormat, setExportFormat] = useState<'csv' | 'pdf' | null>(null);
+    const [includeMetadata, setIncludeMetadata] = useState(true);
+    const [includeFilename, setIncludeFilename] = useState(false);
+    const [selectedColumns, setSelectedColumns] = useState({
+        date: true,
+        provider: true,
+        description: true,
+        currency: true,
+        amount: true,
+        status: true,
+        category: true
+    });
+
+    const ALL_COLUMNS = [
+        { key: 'date', label: 'Date' },
+        { key: 'provider', label: 'Provider' },
+        { key: 'description', label: 'Description' },
+        { key: 'currency', label: 'Currency' },
+        { key: 'amount', label: 'Amount' },
+        { key: 'status', label: 'Status' },
+        { key: 'category', label: 'Category' }
+    ];
+
+    // Close export menu when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
+                setIsExportMenuOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     const filteredInvoices = invoices.filter(inv => {
         if (inv.type !== activeTab) return false;
@@ -147,6 +190,101 @@ export default function InvoicesTable({ filterMonth, dateRange, invoices, loadin
         }
     };
 
+
+
+    const openExportModal = (format: 'csv' | 'pdf') => {
+        setExportFormat(format);
+        setShowExportModal(true);
+        setIsExportMenuOpen(false);
+        setIncludeMetadata(true); // Reset to default
+        setIncludeFilename(false); // Reset to default
+    };
+
+    const executeExport = () => {
+        if (!exportFormat) return;
+
+        // Filter headers and map keys based on selection
+        const activeCols = ALL_COLUMNS.filter(col => selectedColumns[col.key as keyof typeof selectedColumns]);
+        const headers = activeCols.map(col => col.label);
+        const keys = activeCols.map(col => col.key);
+
+        const rows = sortedInvoices.map(inv => {
+            return keys.map(key => {
+                if (key === 'amount') {
+                    // Strip currency symbols, ensure only numbers/decimals remain
+                    return String(inv.amount).replace(/[^\d.-]/g, '');
+                }
+                return (inv as any)[key];
+            });
+        });
+
+        const fileName = `financial_export_${activeTab}_${format(new Date(), 'yyyy-MM-dd')}`;
+
+        if (exportFormat === 'csv') {
+            // Distribute title across columns to prevent "Date" column from being autosized too wide
+            const titleCells = [
+                'Financial Assistant',
+                `- ${activeTab === 'invoice' ? 'Invoices' : 'Receipts'}`,
+                `(Generated on: ${format(new Date(), 'yyyy-MM-dd')})`,
+                ...Array(Math.max(0, headers.length - 3)).fill('')
+            ];
+            const titleRow = titleCells.map(cell => `"${cell}"`).join(',');
+
+            let contentParts = [];
+            if (includeMetadata) {
+                contentParts.push(titleRow);
+                contentParts.push(Array(headers.length).fill('').join(',')); // Empty row with commas
+            }
+
+            contentParts.push(headers.join(','));
+            contentParts.push(...rows.map(row => row.map(cell => `"${String(cell || '').replace(/"/g, '""')}"`).join(',')));
+
+            const csvContent = contentParts.join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `${fileName}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        } else {
+            const doc = new jsPDF();
+
+            let startY = 22;
+            doc.setFontSize(18);
+            doc.text(`Financial Assistant - ${activeTab === 'invoice' ? 'Invoices' : 'Receipts'}`, 14, startY);
+
+            startY += 8;
+            doc.setFontSize(11);
+            doc.text(`Generated on: ${format(new Date(), 'dd MMM yyyy')}`, 14, startY);
+
+            if (includeFilename) {
+                startY += 6;
+                doc.setFontSize(10);
+                doc.setTextColor(100);
+                doc.text(`Filename: ${fileName}.pdf`, 14, startY);
+                doc.setTextColor(0); // Reset color
+            }
+
+            autoTable(doc, {
+                head: [headers],
+                body: rows,
+                startY: startY + 10,
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [66, 66, 66] }
+            });
+
+            doc.save(`${fileName}.pdf`);
+        }
+
+        setShowExportModal(false);
+    };
+
     return (
         <div className={`card ${styles.tableCard}`}>
             <div className={styles.header}>
@@ -162,12 +300,93 @@ export default function InvoicesTable({ filterMonth, dateRange, invoices, loadin
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <button className={styles.filterBtn}>
-                        <Filter size={16} />
-                        <span>Filter</span>
-                    </button>
+
+
+                    <div className={styles.exportWrapper} ref={exportMenuRef}>
+                        <button
+                            className={styles.filterBtn}
+                            onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+                        >
+                            <Download size={16} />
+                            <span>Export</span>
+                            <ChevronDown size={14} style={{ marginLeft: 4, opacity: 0.7 }} />
+                        </button>
+
+                        {isExportMenuOpen && (
+                            <div className={styles.exportMenu}>
+                                <button onClick={() => openExportModal('csv')} className={styles.exportOption}>
+                                    <FileSpreadsheet size={16} className={styles.exportIcon} />
+                                    <span>Export as CSV</span>
+                                </button>
+                                <button onClick={() => openExportModal('pdf')} className={styles.exportOption}>
+                                    <FileText size={16} className={styles.exportIcon} />
+                                    <span>Export as PDF</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
+
+            {/* Export Options Modal */}
+            {showExportModal && (
+                <div className={styles.modalOverlay} onClick={() => setShowExportModal(false)}>
+                    <div className={styles.exportModalContent} onClick={e => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h4>Export Options</h4>
+                            <button className={styles.closeBtn} onClick={() => setShowExportModal(false)}>
+                                <XCircle size={20} />
+                            </button>
+                        </div>
+                        <div className={styles.exportBody}>
+                            <p className={styles.exportSubtitle}>Select columns to include in your <strong>{exportFormat?.toUpperCase()}</strong> file:</p>
+
+                            <div style={{ marginBottom: '16px', paddingBottom: '16px', borderBottom: '1px solid var(--neutral-200)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {exportFormat === 'csv' && (
+                                    <label className={styles.columnOption}>
+                                        <input
+                                            type="checkbox"
+                                            checked={includeMetadata}
+                                            onChange={(e) => setIncludeMetadata(e.target.checked)}
+                                        />
+                                        <span>Include Title & Date Header</span>
+                                    </label>
+                                )}
+                                {exportFormat === 'pdf' && (
+                                    <label className={styles.columnOption}>
+                                        <input
+                                            type="checkbox"
+                                            checked={includeFilename}
+                                            onChange={(e) => setIncludeFilename(e.target.checked)}
+                                        />
+                                        <span>Include Filename in Header</span>
+                                    </label>
+                                )}
+                            </div>
+
+                            <div className={styles.columnGrid}>
+                                {ALL_COLUMNS.map(col => (
+                                    <label key={col.key} className={styles.columnOption}>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedColumns[col.key as keyof typeof selectedColumns]}
+                                            onChange={(e) => setSelectedColumns(prev => ({ ...prev, [col.key]: e.target.checked }))}
+                                        />
+                                        <span>{col.label}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                        <div className={styles.modalFooter}>
+                            <button className={styles.cancelBtn} onClick={() => setShowExportModal(false)}>Cancel</button>
+                            <button className={styles.downloadBtn} onClick={executeExport}>
+                                <Download size={16} />
+                                Download File
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className={styles.tabs}>
                 <button
@@ -255,20 +474,24 @@ export default function InvoicesTable({ filterMonth, dateRange, invoices, loadin
                 )}
             </div>
 
-            {!loading && !error && (
-                <div className={styles.footer}>
-                    <span className={styles.paginationInfo}>Showing {sortedInvoices.length} entries</span>
-                    <div className={styles.paginationControls}>
-                        <button className={styles.pageBtn} disabled>Previous</button>
-                        <button className={styles.pageBtn} disabled>Next</button>
+            {
+                !loading && !error && (
+                    <div className={styles.footer}>
+                        <span className={styles.paginationInfo}>Showing {sortedInvoices.length} entries</span>
+                        <div className={styles.paginationControls}>
+                            <button className={styles.pageBtn} disabled>Previous</button>
+                            <button className={styles.pageBtn} disabled>Next</button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
-            {selectedInvoice && (
-                <DocumentModal invoice={selectedInvoice} onClose={() => setSelectedInvoice(null)} />
-            )}
-        </div>
+            {
+                selectedInvoice && (
+                    <DocumentModal invoice={selectedInvoice} onClose={() => setSelectedInvoice(null)} />
+                )
+            }
+        </div >
     );
 }
 
