@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-    const N8N_FORM_URL = 'https://gibsgibs.app.n8n.cloud/form/8a468b02-abbb-42b5-a42f-3e9facc8babb';
+    const N8N_FORM_URL = 'https://gibsgibs.app.n8n.cloud/webhook/invoice_or_receipt';
 
     try {
         // 1. Get the docType from the URL (we added this in the frontend as a fallback)
@@ -39,7 +39,9 @@ export async function POST(request: Request) {
         });
 
         if (response.ok) {
-            return NextResponse.json({ success: true });
+            // Try to parse JSON response from N8N if available
+            const data = await response.json().catch(() => ({ success: true }));
+            return NextResponse.json(data);
         } else {
             const text = await response.text();
             console.error('N8N Upload Error:', response.status, text);

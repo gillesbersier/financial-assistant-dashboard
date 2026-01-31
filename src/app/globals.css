@@ -1,12 +1,15 @@
 :root {
   /* Brand Colors */
-  --primary: #6366f1; /* Indigo 500 */
+  --primary: #6366f1;
+  /* Indigo 500 */
   --primary-hover: #4f46e5;
   --primary-light: #e0e7ff;
-  
+
   /* Functional Colors */
   --success: #10b981;
   --success-bg: #d1fae5;
+  --info: #3b82f6;
+  --info-bg: #dbeafe;
   --warning: #f59e0b;
   --warning-bg: #fef3c7;
   --error: #ef4444;
@@ -19,7 +22,8 @@
   --neutral-900: #111827;
 
   /* Backgrounds */
-  --bg-page: #f9fafb; /* Gray 50 */
+  --bg-page: #f9fafb;
+  /* Gray 50 */
   --bg-card: #ffffff;
   --bg-subtle: #f3f4f6;
 
@@ -51,19 +55,21 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-page: #0f172a; /* Slate 900 */
-    --bg-card: #1e293b; /* Slate 800 */
+    --bg-page: #0f172a;
+    /* Slate 900 */
+    --bg-card: #1e293b;
+    /* Slate 800 */
     --bg-subtle: #334155;
-    
+
     --text-main: #f9fafb;
     --text-secondary: #94a3b8;
     --text-tertiary: #64748b;
-    
+
     --neutral-100: #1e293b;
     --neutral-200: #334155;
     --neutral-800: #cbd5e1;
     --neutral-900: #f8fafc;
-    
+
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
   }
 }
@@ -74,7 +80,8 @@
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -116,15 +123,38 @@ a {
   justify-content: center;
 }
 
-.text-sm { font-size: 0.875rem; }
-.text-lg { font-size: 1.125rem; }
-.text-xl { font-size: 1.25rem; }
-.text-2xl { font-size: 1.5rem; font-weight: 600; }
+.text-sm {
+  font-size: 0.875rem;
+}
 
-.text-secondary { color: var(--text-secondary); }
-.text-success { color: var(--success); }
-.text-warning { color: var(--warning); }
-.text-error { color: var(--error); }
+.text-lg {
+  font-size: 1.125rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-success {
+  color: var(--success);
+}
+
+.text-warning {
+  color: var(--warning);
+}
+
+.text-error {
+  color: var(--error);
+}
 
 .badge {
   display: inline-flex;
@@ -135,8 +165,22 @@ a {
   font-weight: 500;
 }
 
-.badge-success { background: var(--success-bg); color: var(--success); }
-.badge-warning { background: var(--warning-bg); color: var(--warning); }
-.badge-error { background: var(--error-bg); color: var(--error); }
-.badge-neutral { background: var(--neutral-100); color: var(--text-secondary); }
+.badge-success {
+  background: var(--success-bg);
+  color: var(--success);
+}
 
+.badge-warning {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
+.badge-error {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.badge-neutral {
+  background: var(--neutral-100);
+  color: var(--text-secondary);
+}

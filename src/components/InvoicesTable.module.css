@@ -3,8 +3,11 @@
     /* Header and table handle padding */
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: visible;
+    /* Changed from hidden to allow dropdowns */
 }
+
+/* ... existing styles ... */
 
 .header {
     padding: var(--space-lg);
@@ -16,7 +19,7 @@
 }
 
 .title {
-    font-size: 1.125rem;
+    font-size: 1.5rem;
     font-weight: 600;
     color: var(--text-main);
 }
@@ -74,7 +77,8 @@
 }
 
 .tableWrapper {
-    overflow-x: auto;
+    overflow-x: visible;
+    /* Changed from auto to allow dropdowns, might break responsive scroll */
 }
 
 .table {
@@ -142,6 +146,11 @@
     color: var(--success);
 }
 
+.badgeInfo {
+    background: var(--info-bg);
+    color: var(--info);
+}
+
 .badgeWarning {
     background: var(--warning-bg);
     color: var(--warning);
@@ -171,6 +180,65 @@
 
 .actionBtn:hover {
     background: var(--neutral-200);
+    color: var(--text-main);
+}
+
+/* Category Dropdown Styles */
+.categoryBtn {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.categoryBtn:hover {
+    background: var(--neutral-100);
+    color: var(--text-main);
+    border-color: var(--neutral-200);
+}
+
+.categoryDropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    /* Align right */
+    margin-top: 4px;
+    background: var(--bg-card);
+    border: 1px solid var(--neutral-200);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    padding: 4px;
+    z-index: 20;
+    min-width: 140px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.categoryOption {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s;
+}
+
+.categoryOption:hover {
+    background: var(--neutral-100);
     color: var(--text-main);
 }
 
@@ -288,7 +356,7 @@
 
 .tab {
     padding: var(--space-sm) 0;
-    font-size: 0.875rem;
+    font-size: 1.125rem;
     font-weight: 500;
     color: var(--text-secondary);
     background: none;

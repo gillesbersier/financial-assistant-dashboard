@@ -1,10 +1,84 @@
 .chartContainer {
+    /* Main Card Styling */
+    position: relative;
+    /* We no longer use flex/padding here directly for content because of the flip wrapper, 
+       but we keep the sizing to maintain layout flow if needed.
+       Actually, to make flip work nicely, we should probably move dimensions to the flip container.
+    */
+    perspective: 1000px;
+    height: 400px;
+    background: transparent;
+    /* Card background is now on faces */
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+
+.flipper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 1.2s;
+    transform-style: preserve-3d;
+}
+
+.flipped {
+    transform: rotateY(-180deg);
+}
+
+.front,
+.back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--bg-card);
+    border: 1px solid var(--neutral-200);
+    box-shadow: var(--shadow-sm);
     padding: var(--space-lg);
     display: flex;
     flex-direction: column;
-    height: 400px;
 }
 
+.front {
+    z-index: 2;
+}
+
+.back {
+    transform: rotateY(-180deg);
+    /* overflow handled in tableContainer */
+}
+
+.tableContainer {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 4px;
+    /* Space for scrollbar */
+}
+
+/* Custom Scrollbar */
+.tableContainer::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tableContainer::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+.tableContainer::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.tableContainer::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Header styles applied to both faces */
 .header {
     display: flex;
     justify-content: space-between;
@@ -13,9 +87,17 @@
 }
 
 .title {
-    font-size: 1.125rem;
+    font-size: 1.5rem;
     font-weight: 600;
     color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.title:hover {
+    color: var(--primary);
 }
 
 .filter {
@@ -44,4 +126,44 @@
 
 .chartWrapper :global(.recharts-bar-rectangle:focus) {
     outline: none !important;
+}
+
+/* Back side table styles */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.875rem;
+}
+
+.table th {
+    padding: 8px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    border-bottom: 1px solid var(--neutral-200);
+}
+
+.table td {
+    padding: 8px;
+    color: var(--text-main);
+    border-bottom: 1px solid var(--neutral-100);
+}
+
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Move Total column slightly left to avoid scrollbar crowding */
+.table th:last-child,
+.table td:last-child {
+    padding-right: 16px;
+}
+
+.amountCell {
+    text-align: right;
+    font-family: monospace;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--primary);
 }

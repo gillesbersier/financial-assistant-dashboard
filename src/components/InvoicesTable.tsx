@@ -2,12 +2,23 @@
 
 import { useState } from 'react';
 import styles from './InvoicesTable.module.css';
-import { ChevronRight, Search, Filter, Loader2, AlertCircle, RefreshCw, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import { ChevronRight, Search, Filter, Loader2, AlertCircle, RefreshCw, ArrowUp, ArrowDown, ArrowUpDown, Home, Monitor, Car, Utensils, GraduationCap, Palmtree, MoreHorizontal, HelpCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { useInvoices, Invoice } from '../hooks/useInvoices';
 import { format, parseISO, isSameMonth, isSameYear } from 'date-fns';
 
-export default function InvoicesTable({ filterMonth }: { filterMonth?: Date | null }) {
-    const { invoices, loading, error, refresh } = useInvoices();
+interface InvoicesTableProps {
+    filterMonth?: Date | null;
+    dateRange?: [number, number] | null;
+    invoices: Invoice[];
+    loading: boolean;
+    error: string | null;
+    refresh: () => void;
+    updateCategory: (id: string, category: Invoice['category']) => Promise<void>;
+    syncStatus: Record<string, 'syncing' | 'success' | 'error'>;
+}
+
+export default function InvoicesTable({ filterMonth, dateRange, invoices, loading, error, refresh, updateCategory, syncStatus }: InvoicesTableProps) {
+    // Removed internal hook call
     const [activeTab, setActiveTab] = useState<'invoice' | 'receipt'>('invoice');
     const [selectedInvoice, setSelectedInvoice] = useState<typeof invoices[0] | null>(null);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
@@ -16,8 +27,23 @@ export default function InvoicesTable({ filterMonth }: { filterMonth?: Date | nu
     const filteredInvoices = invoices.filter(inv => {
         if (inv.type !== activeTab) return false;
 
+        // Date Range Filter
+        if (dateRange) {
+            if (!inv.date || inv.date === 'N/A') return false;
+            const invTime = parseISO(inv.date).getTime();
+            // Check if within range (inclusive)
+            if (invTime < dateRange[0] || invTime > dateRange[1]) {
+                return false;
+            }
+        }
+
         // Month Filter
-        if (filterMonth && inv.date && inv.date !== 'N/A') {
+        if (filterMonth) {
+            // Strictly exclude items with no valid date when filtering by month
+            if (!inv.date || inv.date === 'N/A') {
+                return false;
+            }
+
             const invDate = parseISO(inv.date);
             if (!isSameMonth(invDate, filterMonth) || !isSameYear(invDate, filterMonth)) {
                 return false;
@@ -78,8 +104,10 @@ export default function InvoicesTable({ filterMonth }: { filterMonth?: Date | nu
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case 'processed':
-                return <span className={`${styles.badge} ${styles.badgeSuccess}`}>Processed</span>;
+            case 'in_the_books':
+                return <span className={`${styles.badge} ${styles.badgeSuccess}`}>In the Books</span>;
+            case 'categorized':
+                return <span className={`${styles.badge} ${styles.badgeInfo}`}>Categorized</span>;
             case 'pending':
                 return <span className={`${styles.badge} ${styles.badgeWarning}`}>Pending</span>;
             case 'review_required':
@@ -92,7 +120,7 @@ export default function InvoicesTable({ filterMonth }: { filterMonth?: Date | nu
     return (
         <div className={`card ${styles.tableCard}`}>
             <div className={styles.header}>
-                <h3 className={styles.title}>Recent Invoices</h3>
+                <h3 className={styles.title}>Invoices and Receipts</h3>
                 <div className={styles.controls}>
                     <div className={styles.searchWrapper}>
                         <Search size={16} className={styles.searchIcon} />
@@ -163,7 +191,7 @@ export default function InvoicesTable({ filterMonth }: { filterMonth?: Date | nu
                                 <th onClick={() => requestSort('status')} style={{ cursor: 'pointer' }}>
                                     <div style={{ display: 'flex', alignItems: 'center' }}>Status {getSortIcon('status')}</div>
                                 </th>
-                                <th></th>
+                                <th>Category</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -181,16 +209,12 @@ export default function InvoicesTable({ filterMonth }: { filterMonth?: Date | nu
                                     <td style={{ textAlign: 'center' }}>{inv.currency}</td>
                                     <td className={styles.amountCell}>{inv.rawAmount.toFixed(2)}</td>
                                     <td>{getStatusBadge(inv.status)}</td>
-                                    <td className={styles.actionCell} onClick={(e) => { e.stopPropagation(); handleRowClick(inv); }}>
-                                        {inv.link ? (
-                                            <a href={inv.link} target="_blank" rel="noopener noreferrer" className={styles.actionBtn}>
-                                                <ChevronRight size={16} />
-                                            </a>
-                                        ) : (
-                                            <button className={styles.actionBtn}>
-                                                <ChevronRight size={16} />
-                                            </button>
-                                        )}
+                                    <td onClick={(e) => e.stopPropagation()}>
+                                        <CategorySelect
+                                            current={inv.category}
+                                            onSelect={(cat) => updateCategory(inv.id, cat)}
+                                            syncStatus={syncStatus[inv.id]}
+                                        />
                                     </td>
                                 </tr>
                             ))}
@@ -211,6 +235,71 @@ export default function InvoicesTable({ filterMonth }: { filterMonth?: Date | nu
 
             {selectedInvoice && (
                 <DocumentModal invoice={selectedInvoice} onClose={() => setSelectedInvoice(null)} />
+            )}
+        </div>
+    );
+}
+
+const CATEGORIES: { label: Invoice['category'], icon: any }[] = [
+    { label: 'Habitat', icon: Home },
+    { label: 'Electronics', icon: Monitor }, // User asked for Electronics
+    { label: 'Mobility', icon: Car },
+    { label: 'Food', icon: Utensils },
+    { label: 'Education', icon: GraduationCap },
+    { label: 'Leisure', icon: Palmtree },
+    { label: 'Miscellaneous', icon: MoreHorizontal }
+];
+
+function CategorySelect({ current, onSelect, syncStatus }: { current: Invoice['category'], onSelect: (c: Invoice['category']) => void, syncStatus?: 'syncing' | 'success' | 'error' }) {
+    const [isOpen, setIsOpen] = useState(false);
+
+    // Find current icon
+    const currentCatObj = CATEGORIES.find(c => c.label === current) || CATEGORIES[6];
+    const Icon = currentCatObj.icon;
+
+    return (
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className={styles.categoryBtn}
+                title={current}
+            >
+                <Icon size={22} />
+            </button>
+
+            {/* Status Indicators */}
+            {syncStatus === 'syncing' && (
+                <Loader2 size={16} className={styles.spinner} />
+            )}
+            {syncStatus === 'success' && (
+                <CheckCircle2 size={18} color="var(--success)" className="animate-in fade-in zoom-in duration-300" />
+            )}
+            {syncStatus === 'error' && (
+                <XCircle size={18} color="var(--error)" />
+            )}
+
+            {isOpen && (
+                <>
+                    <div
+                        style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10 }}
+                        onClick={() => setIsOpen(false)}
+                    />
+                    <div className={styles.categoryDropdown}>
+                        {CATEGORIES.map(cat => (
+                            <button
+                                key={cat.label}
+                                className={styles.categoryOption}
+                                onClick={() => {
+                                    onSelect(cat.label);
+                                    setIsOpen(false);
+                                }}
+                            >
+                                <cat.icon size={20} />
+                                <span>{cat.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </>
             )}
         </div>
     );
