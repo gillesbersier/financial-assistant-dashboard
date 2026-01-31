@@ -221,7 +221,9 @@ export default function InvoicesTable({ filterMonth, dateRange, invoices, loadin
                                 <th onClick={() => requestSort('status')} style={{ cursor: 'pointer' }}>
                                     <div style={{ display: 'flex', alignItems: 'center' }}>Status {getSortIcon('status')}</div>
                                 </th>
-                                <th>Category</th>
+                                <th onClick={() => requestSort('category')} style={{ cursor: 'pointer' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>Category {getSortIcon('category')}</div>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
